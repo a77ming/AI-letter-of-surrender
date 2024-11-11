@@ -1,0 +1,440 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+  --background-primary: #ffffff;
+  --background-secondary: #f5f5f7;
+  --text-primary: #1d1d1f;
+  --text-secondary: #86868b;
+  --accent-color: #0071e3;
+  --border-color: #d2d2d7;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --glass-background: rgba(255, 255, 255, 0.7);
+  --glass-background-dark: rgba(23, 23, 23, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-dark: rgba(255, 255, 255, 0.05);
+  --transition-slow: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-medium: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  --ai-primary: #0A2540;
+  --ai-secondary: #00D4FF;
+  --ai-accent: #FF2E63;
+  --ai-gradient: linear-gradient(135deg, #00D4FF 0%, #0A2540 100%);
+  --card-bg: rgba(255, 255, 255, 0.95);
+  --card-border: rgba(255, 255, 255, 0.2);
+  --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --article-title: #0A2540;
+  --article-text: #4A5568;
+  --article-meta: #718096;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+    --background-primary: #000000;
+    --background-secondary: #1c1c1e;
+    --text-primary: #ffffff;
+    --text-secondary: #98989d;
+    --border-color: #38383c;
+    --card-bg: rgba(10, 37, 64, 0.95);
+    --article-title: #E2E8F0;
+    --article-text: #A0AEC0;
+    --article-meta: #718096;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    background-color: var(--background-primary);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* 现代化按钮样式 */
+.button {
+  background-color: var(--accent-color);
+  border: none;
+  border-radius: 980px;  /* 苹果风格的圆角 */
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.button:hover {
+  transform: scale(1.02);
+  background-color: #0077ED;
+}
+
+/* 现代化卡片样式 */
+.card {
+  background: var(--background-primary);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* 输入框样式 */
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.1);
+}
+
+/* 添加毛玻璃效果类 */
+.glass-effect {
+  @apply backdrop-blur-xl;
+  background: var(--glass-background);
+  border: 1px solid var(--glass-border);
+  
+  @media (prefers-color-scheme: dark) {
+    background: var(--glass-background-dark);
+    border-color: var(--glass-border-dark);
+  }
+}
+
+/* 添加页面过渡动画 */
+.page-transition {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 添加悬浮动画效果 */
+.hover-lift {
+  transition: transform var(--transition-medium);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+
+/* 优化移动端触摸反馈 */
+@media (hover: none) {
+  .touch-feedback {
+    transition: opacity var(--transition-fast);
+  }
+  
+  .touch-feedback:active {
+    opacity: 0.7;
+  }
+}
+
+/* 文章卡片样式 */
+.article-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 24px;
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+  padding: 2rem;
+  margin: 1rem 0;
+  transition: all 0.3s ease;
+}
+
+.article-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* 文章标题 */
+.article-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--article-title);
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+/* 文章内容 */
+.article-content {
+  color: var(--article-text);
+  line-height: 1.8;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* 文章元信息 */
+.article-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--article-meta);
+  font-size: 0.9rem;
+}
+
+/* AI装饰元素 */
+.ai-decoration {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 80px;
+  height: 80px;
+  background: var(--ai-gradient);
+  border-radius: 50%;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+/* 发光效果 */
+.glow-effect {
+  position: relative;
+}
+
+.glow-effect::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: var(--ai-gradient);
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.glow-effect:hover::after {
+  opacity: 0.5;
+}
+.card-minimal {
+  aspect-ratio: 16/9;
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 48px;
+  box-sizing: border-box;
+  
+  /* 背景和边框 */
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  
+  /* Flex布局 */
+  display: flex;
+  flex-direction: column;
+  gap: 32px; /* 增加各部分之间的间距 */
+}
+
+/* 头部样式优化 */
+.card-minimal .header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* 图标样式 */
+.card-minimal .icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+/* 标题样式优化 */
+.card-minimal .title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #333333;
+  line-height: 1.4;
+}
+
+/* 内容区域优化 */
+.card-minimal .content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1.8;
+  color: #333333;
+  letter-spacing: 0.02em;
+}
+
+/* 段落样式 */
+.card-minimal .content p {
+  margin: 0;
+  padding: 0;
+}
+
+/* 底部样式优化 */
+.card-minimal .footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 16px;
+}
+
+/* 响应式调整 */
+@media (max-width: 1440px) {
+  .card-minimal {
+    padding: 40px;
+  }
+  .card-minimal .title {
+    font-size: 24px;
+  }
+  .card-minimal .content {
+    font-size: 16px;
+    line-height: 1.7;
+  }
+}
+
+@media (max-width: 1024px) {
+  .card-minimal {
+    padding: 32px;
+  }
+  .card-minimal .title {
+    font-size: 22px;
+  }
+  .card-minimal .content {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+}
+/* 卡片样式变体 */
+.card-modern {
+  background: #000000 !important;
+  color: white !important;
+  border: none !important;
+}
+
+.card-neon {
+  background: #1a1a1a !important;
+  border: 1px solid rgba(123, 97, 255, 0.3) !important;
+  box-shadow: 0 0 20px rgba(123, 97, 255, 0.3) !important;
+  color: white !important;
+}
+
+.card-glass {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.card-minimal {
+  background: white !important;
+  border: 1px solid #eaeaea !important;
+}
+
+.card-gradient {
+  background: linear-gradient(135deg, #7b61ff 0%, #00cc88 100%) !important;
+  color: white !important;
+  border: none !important;
+}
+
+/* 分享按钮样式 */
+.share-button {
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.share-button:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--accent-color);
+}
+
+/* 深色模式适配 */
+.dark .card-minimal {
+  background: #1a1a1a !important;
+  border-color: #333 !important;
+}
+
+.dark .share-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
