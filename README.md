@@ -72,6 +72,7 @@ npm run dev
 - 动画效果使用 [Framer Motion](https://www.framer.com/motion/)
 
 ## 📮 联系方式
+![image](https://github.com/user-attachments/assets/c2687031-8d86-4fd8-9085-8b326069b113)
 
 如果您有任何问题或建议，欢迎通过以下方式联系：
 
