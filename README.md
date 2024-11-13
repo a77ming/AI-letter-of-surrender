@@ -38,6 +38,11 @@ npm install
 cp .env.example .env.local
 ```
 
+在 `.env.local` 文件中添加你的 API key：
+```env
+OPENAI_API_KEY=你的API密钥
+```
+
 4. 启动开发服务器
 ```bash
 npm run dev

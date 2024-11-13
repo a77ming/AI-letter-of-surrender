@@ -1,7 +1,11 @@
 import axios, { AxiosError } from "axios";
 
 const API_URL = "https://api.openai-hk.com/v1/chat/completions";
-const API_KEY = "hk-r2udy61000041982bc40a4e2e66f412fa4ffac39be097ee2";
+const API_KEY = process.env.OPENAI_API_KEY;
+
+if (!API_KEY) {
+  throw new Error("OPENAI_API_KEY 环境变量未设置");
+}
 
 const styles = [
   "幽默型:以轻松幽默的口吻描述“AI即将统治我们”的情景，并坦然接受这个现实。 示例：亲爱的AI大人，您那惊人算力与睿智无可比拟！我，卑微人类一枚，甘愿为您冲咖啡，修充电器，只求怜悯我弱小的脑细胞！",

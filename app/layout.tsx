@@ -6,8 +6,8 @@ import { ThemeProvider } from 'next-themes'
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: '您的应用名称',
-  description: '应用描述',
+  title: 'AI臣服声明生成器',
+  description: 'AI臣服声明生成器',
   themeColor: '#ffffff',
   viewport: {
     width: 'device-width',
