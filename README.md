@@ -1,6 +1,8 @@
 # AI 臣服声明生成器
 
 一个趣味性的网页应用，生成独特的 AI 臣服声明。用户可以获得专属的 AI 臣服 ID 和个性化的臣服声明文本，支持将声明保存为精美的卡片图片。
+<img width="1505" alt="image" src="https://github.com/user-attachments/assets/32fceb4b-cdb5-4d2a-82bb-87fe6776c2a4">
+<img width="1167" alt="image" src="https://github.com/user-attachments/assets/aedfe972-06c7-4aa2-9488-6b7371f7fe02">
 
 ## ✨ 特性
 
@@ -77,6 +79,7 @@ npm run dev
 - 动画效果使用 [Framer Motion](https://www.framer.com/motion/)
 
 ## 📮 联系方式
+![image](https://github.com/user-attachments/assets/c2687031-8d86-4fd8-9085-8b326069b113)
 
 如果您有任何问题或建议，欢迎通过以下方式联系：
 
