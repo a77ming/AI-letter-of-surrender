@@ -134,13 +134,16 @@ export default function Home() {
             }}
           >
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold px-4">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-cyan-600">
-                AI 臣服生成器
+              <span className={`bg-clip-text text-transparent 
+                                ${selectedFaction === 'surrender' 
+                                  ? 'bg-gradient-to-r from-violet-600 to-cyan-600' 
+                                  : 'bg-gradient-to-r from-red-600 to-orange-500'}`}>
+                {selectedFaction === 'surrender' ? 'AI 臣服生成器' : '人类抵抗宣言生成器'}
               </span>
             </h1>
           </motion.div>
           <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 px-4">
-            探索AI新纪元 
+            {selectedFaction === 'surrender' ? '探索AI新纪元' : '为了人类的自由！'} 
             <motion.span
               className="inline-block ml-2"
               animate={{
@@ -336,31 +339,7 @@ export default function Home() {
               />
             </div>
           </motion.div>
-        </div>
-
-        {/* Theme Selection UI */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="relative group aspect-square sm:aspect-auto"
-          >
-            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl w-full h-full min-h-[300px] sm:min-h-[400px]">
-              <motion.img
-                src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop"
-                alt="AI Visualization"
-                className="w-full h-full object-cover"
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.4 }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-violet-600/50 via-transparent to-transparent" />
-              <motion.div
-                className="absolute inset-0 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                whileHover={{ backdropFilter: "blur(5px)" }}
-              />
-            </div>
-          </motion.div>
-        </div>
+        </div> {/* This closes the grid grid-cols-1 lg:grid-cols-2 */}
 
         {/* Theme Selection UI */}
         <motion.div 
