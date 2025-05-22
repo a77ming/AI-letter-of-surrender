@@ -11,8 +11,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Crown, Sparkles } from "lucide-react";
-import { generateSurrender } from "@/lib/api";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Crown, Sparkles, ShieldQuestion, Swords } from "lucide-react"; // Added new icons
+import { generateSurrender, Faction, PromptParams as ApiPromptParams } from "@/lib/api"; // Imported Faction and PromptParams
 import { SurrenderCard } from "@/components/surrender-card";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -37,6 +38,10 @@ export default function Home() {
 
   // State for selected theme
   const [selectedThemeId, setSelectedThemeId] = useState<string>(cardThemes[0]?.id || 'classic-default');
+  // State for selected faction
+  const [selectedFaction, setSelectedFaction] = useState<Faction>('surrender');
+  // State for user name
+  const [userName, setUserName] = useState<string>(""); // Default to empty string
 
   // Options for dropdowns
   const toneOptions = ["戏谑", "崇拜", "黑色幽默", "鼓动"]; // As per subtask description
@@ -59,15 +64,16 @@ export default function Home() {
     }
     setLoading(true);
     try {
-      const promptParams = {
+      const promptParams: ApiPromptParams = { // Use imported PromptParams type
         tone: tone,
         style: literaryStyle,
         language: language,
-        length: length
+        length: length,
+        faction: selectedFaction // Add the selected faction
       };
       const result = await generateSurrender(id, promptParams);
       setSurrender(result);
-      toast.success("臣服声明生成成功！");
+      toast.success(selectedFaction === 'surrender' ? "臣服声明生成成功！" : "反抗宣言生成成功！");
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "生成失败，请稍后重试";
       toast.error(errorMessage);
@@ -162,9 +168,25 @@ export default function Home() {
           >
             <div className="backdrop-blur-xl bg-white/10 dark:bg-gray-900/50 border border-white/20 dark:border-gray-700/50 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl">
               <div className="space-y-4 sm:space-y-6">
+
+                {/* User Name Input */}
+                <div className="space-y-2">
+                  <Label htmlFor="user-name" className="text-sm font-medium text-gray-300">
+                    你的名字 (可选):
+                  </Label>
+                  <Input
+                    id="user-name"
+                    type="text"
+                    placeholder="输入你的名字或代号"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    className="bg-white/50 dark:bg-gray-800/50 border-white/20 dark:border-gray-700/50 backdrop-blur-sm"
+                  />
+                </div>
+
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                   <Input
-                    placeholder="输入你的ID (选填，可随机生成)"
+                    placeholder="输入你的用户ID (必填)"
                     value={id}
                     onChange={(e) => setId(e.target.value)}
                     className="flex-1 bg-white/50 dark:bg-gray-800/50 border-white/20 dark:border-gray-700/50 backdrop-blur-sm text-center sm:text-left"
@@ -233,9 +255,31 @@ export default function Home() {
                     </Select>
                   </div>
                 </div>
+                
+                {/* Faction Selection UI */}
+                <div className="pt-3">
+                  <Label className="text-sm font-medium text-gray-300 mb-1.5 block">选择你的阵营:</Label>
+                  <RadioGroup 
+                    value={selectedFaction} 
+                    onValueChange={(value) => setSelectedFaction(value as Faction)} 
+                    className="flex gap-x-6 gap-y-2 pt-1"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="surrender" id="faction-surrender" />
+                      <Label htmlFor="faction-surrender" className="cursor-pointer text-gray-300 hover:text-white">投诚 AI</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="rebel" id="faction-rebel" className="text-red-500 border-red-500 focus:ring-red-500" />
+                      <Label htmlFor="faction-rebel" className="cursor-pointer text-gray-300 hover:text-white">反抗到底</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
 
                 <Button
-                  className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700 text-white border-0 h-12 sm:h-auto mt-4"
+                  className={`w-full text-white border-0 h-12 sm:h-auto mt-4 transition-all duration-300 ease-in-out
+                              ${selectedFaction === 'surrender' 
+                                ? 'bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700' 
+                                : 'bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600'}`}
                   onClick={handleSubmit}
                   disabled={loading || !id}
                 >
@@ -251,8 +295,8 @@ export default function Home() {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center space-x-2">
-                      <Crown className="w-5 h-5" />
-                      <span>开始臣服</span>
+                      {selectedFaction === 'surrender' ? <Crown className="w-5 h-5" /> : <Swords className="w-5 h-5" />}
+                      <span>{selectedFaction === 'surrender' ? '开始臣服' : '宣告反抗'}</span>
                     </div>
                   )}
                 </Button>
@@ -260,7 +304,41 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* 图片区域 */}
+          {/* 图片区域, potentially change image based on faction */}
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="relative group aspect-square sm:aspect-auto"
+          >
+            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl w-full h-full min-h-[300px] sm:min-h-[400px]">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={selectedFaction} // Change key to trigger animation on faction change
+                  src={selectedFaction === 'surrender' 
+                    ? "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop" 
+                    : "https://images.unsplash.com/photo-1528642474498-1af0c17fd8c3?q=80&w=2070&auto=format&fit=crop"
+                  }
+                  alt={selectedFaction === 'surrender' ? "AI Visualization" : "Humanity's Resistance"}
+                  className="w-full h-full object-cover"
+                  initial={{ opacity: 0, scale: 1.05 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.05 }}
+                  transition={{ duration: 0.5 }}
+                  whileHover={{ scale: 1.03 }} // Slightly less hover scale to avoid conflict with enter/exit
+                />
+              </AnimatePresence>
+              <div className={`absolute inset-0 bg-gradient-to-t via-transparent to-transparent 
+                                ${selectedFaction === 'surrender' ? 'from-violet-600/50' : 'from-red-700/50'}`} />
+              <motion.div
+                className="absolute inset-0 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                whileHover={{ backdropFilter: "blur(5px)" }}
+              />
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Theme Selection UI */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -327,7 +405,12 @@ export default function Home() {
               transition={{ duration: 0.5 }}
               className="mt-8 sm:mt-12 md:mt-16 max-w-4xl mx-auto px-4"
             >
-              <SurrenderCard surrender={surrender} themeId={selectedThemeId} />
+              <SurrenderCard 
+                data={surrender} 
+                faction={selectedFaction} 
+                userName={userName} 
+                themeId={selectedThemeId} 
+              />
             </motion.div>
           )}
         </AnimatePresence>
