@@ -1,9 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Share2, Download, Share } from "lucide-react";
+import { Share2, Download } from "lucide-react"; // Removed Share as it's not used
 import { toast } from "sonner";
-import { avatarStyles, cardStyles } from "@/lib/avatarConfig";
+import { avatarStyles, cardStyles as originalCardStyles } from "@/lib/avatarConfig";
+import { themes, getThemeById, CardTheme } from '@/lib/themeConfig';
 import { useMemo, useRef } from "react";
 import html2canvas from "html2canvas";
 
@@ -13,21 +14,36 @@ interface SurrenderCardProps {
     citizenId: string;
     timestamp: string;
   };
+  themeId?: string; // New prop
 }
 
-export function SurrenderCard({ surrender }: SurrenderCardProps) {
+export function SurrenderCard({ surrender, themeId }: SurrenderCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  
-  const randomStyle = useMemo(() => {
+
+  const selectedThemeConfig = themeId ? getThemeById(themeId) : undefined;
+
+  const cardStyleToApply = useMemo(() => {
+    if (selectedThemeConfig) {
+      return selectedThemeConfig.styles;
+    }
+    // Fallback to original random styling if no themeId or theme not found
+    const originalRandomCardStyle = originalCardStyles[Math.abs(surrender.citizenId.split('').reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0) >> 4) % originalCardStyles.length];
+    return {
+      gradient: originalRandomCardStyle.gradient,
+      shadow: originalRandomCardStyle.shadow,
+      // Ensure other necessary properties used in the style prop are potentially mapped here or handled
+      // For instance, if the new themes use backgroundColor, but old ones only gradient
+      // backgroundColor: originalRandomCardStyle.gradient ? undefined : originalRandomCardStyle.backgroundColor, // Example
+      // cardClassName: originalRandomCardStyle.className, // if old styles had it
+    };
+  }, [surrender.citizenId, selectedThemeConfig]);
+
+  const avatarIcon = useMemo(() => {
     const hash = surrender.citizenId.split('').reduce((acc, char) => {
       return char.charCodeAt(0) + ((acc << 5) - acc);
     }, 0);
     const avatarIndex = Math.abs(hash) % avatarStyles.length;
-    const cardIndex = Math.abs(hash >> 4) % cardStyles.length;
-    return {
-      avatar: avatarStyles[avatarIndex],
-      card: cardStyles[cardIndex]
-    };
+    return avatarStyles[avatarIndex].icon;
   }, [surrender.citizenId]);
 
   const handleShare = async () => {
@@ -89,10 +105,12 @@ export function SurrenderCard({ surrender }: SurrenderCardProps) {
     <div className="relative">
       <motion.div
         ref={cardRef}
-        className={`article-card ${randomStyle.card.className}`}
+        className={`article-card ${selectedThemeConfig?.styles.cardClassName || ''}`}
         style={{
-          background: randomStyle.card.gradient,
-          boxShadow: randomStyle.card.shadow
+          background: cardStyleToApply.gradient || cardStyleToApply.backgroundColor,
+          boxShadow: cardStyleToApply.shadow,
+          color: selectedThemeConfig?.styles.textColor,
+          fontFamily: selectedThemeConfig?.styles.fontFamily,
         }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -100,11 +118,14 @@ export function SurrenderCard({ surrender }: SurrenderCardProps) {
       >
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0 text-2xl">
-            {randomStyle.avatar.icon}
+            {avatarIcon}
           </div>
           
           <div className="flex-1">
-            <h2 className="article-title">
+            <h2 
+              className="article-title"
+              style={{ color: selectedThemeConfig?.styles.titleColor || selectedThemeConfig?.styles.textColor }}
+            >
               AI臣服声明 #{surrender.citizenId}
             </h2>
             

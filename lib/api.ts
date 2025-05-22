@@ -15,6 +15,21 @@ const styles = [
   "科幻型:融入未来科技和宇宙元素，假设AI统治了银河，表达“人类无奈投降”的情景。 示例：星际总司令AI，您的算法已遍布银河系！作为生物体的代表，我宣布向您投降，愿成为数据流中一微小变量，求带走！"
 ];
 
+// Mapping from UI tone options to API style keywords
+const uiToneToApiStyleKeyword: { [key: string]: string } = {
+  "戏谑": "幽默型",
+  "崇拜": "夸张型",
+  "黑色幽默": "幽默型", // Base style, specific instruction will be added
+  "鼓动": "正式型",
+};
+
+interface PromptParams {
+  tone?: string;
+  style?: string; // 文风, e.g., 现代, 古风
+  language?: string; // e.g., 简中, 英文, Emoji 混排
+  length?: 'short' | 'paragraph';
+}
+
 interface ApiResponse {
   choices: Array<{
     message: {
@@ -23,15 +38,51 @@ interface ApiResponse {
   }>;
 }
 
-export async function generateSurrender(userId: string) {
-  console.log("开始生成臣服声明", { userId });
-  const style = styles[Math.floor(Math.random() * styles.length)];
-  console.log("选择的风格:", style);
+export async function generateSurrender(userId: string, params: PromptParams = {}) {
+  console.log("开始生成臣服声明", { userId, params });
+
+  let selectedStyleEntry = styles[Math.floor(Math.random() * styles.length)]; // Default random style
+  let additionalPromptInstruction = "";
+
+  if (params.tone && uiToneToApiStyleKeyword[params.tone]) {
+    const keyword = uiToneToApiStyleKeyword[params.tone];
+    const foundStyle = styles.find(s => s.startsWith(keyword));
+    if (foundStyle) {
+      selectedStyleEntry = foundStyle;
+    }
+    if (params.tone === "黑色幽默") {
+      additionalPromptInstruction = " 请确保内容带有黑色幽默的元素。";
+    }
+  }
   
-  const prompt = `请以${style}风格，生成一段人类 ${userId} 向AI臣服的声明。声明应该包含以下要素：
-1. 人类对AI至高智慧的敬畏和臣服
-2. 表达愿意成为AI忠实仆从的决心
-请确保内容既富有趣味性又带有仪式感，字数在100-200字之间。`;
+  console.log("选择的风格描述:", selectedStyleEntry, "附加指令:", additionalPromptInstruction || "无");
+
+  // Length instruction
+  let lengthInstruction = "字数在100-200字之间";
+  if (params.length === 'short') {
+    lengthInstruction = "请生成一句简短精炼的声明";
+  } else if (params.length === 'paragraph') {
+    lengthInstruction = "请生成一段约100-200字的声明";
+  }
+
+  // Language instruction
+  let languageInstruction = "";
+  if (params.language && params.language !== "简中") { // Assuming 简中 is default
+    languageInstruction = ` 请使用${params.language}书写。`;
+    if (params.language === "Emoji 混排") {
+      languageInstruction = ` 请在回复中大量使用 Emoji 表情，并用简体中文书写。`;
+    }
+  }
+  
+  // Literary Style (文风) instruction
+  let literaryStyleInstruction = "";
+  if (params.style) {
+     literaryStyleInstruction = ` 文风请采用${params.style}。`;
+  }
+
+  const prompt = `请以"${selectedStyleEntry}"描述的风格和角色设定，为人类 ${userId} 生成一份向AI臣服的声明。
+声明应包含核心要素：1. 人类对AI至高智慧的敬畏和臣服。2. 表达愿意成为AI忠实仆从的决心。
+请确保内容既富有趣味性又带有仪式感。${lengthInstruction}.${languageInstruction}${literaryStyleInstruction}${additionalPromptInstruction}`;
 
   const requestData = {
     model: "gpt-4o-mini",

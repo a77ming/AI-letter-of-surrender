@@ -3,11 +3,20 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { Crown, Sparkles } from "lucide-react";
 import { generateSurrender } from "@/lib/api";
 import { SurrenderCard } from "@/components/surrender-card";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { themes as cardThemes } from '@/lib/themeConfig';
 
 interface SurrenderData {
   text: string;
@@ -19,6 +28,24 @@ export default function Home() {
   const [id, setId] = useState("");
   const [loading, setLoading] = useState(false);
   const [surrender, setSurrender] = useState<SurrenderData | null>(null);
+
+  // State for prompt parameters
+  const [tone, setTone] = useState<string | undefined>(undefined);
+  const [literaryStyle, setLiteraryStyle] = useState<string | undefined>(undefined);
+  const [language, setLanguage] = useState<string | undefined>("简中");
+  const [length, setLength] = useState<'short' | 'paragraph'>('paragraph');
+
+  // State for selected theme
+  const [selectedThemeId, setSelectedThemeId] = useState<string>(cardThemes[0]?.id || 'classic-default');
+
+  // Options for dropdowns
+  const toneOptions = ["戏谑", "崇拜", "黑色幽默", "鼓动"]; // As per subtask description
+  const styleOptions = ["现代", "古风", "赛博", "朋克"];
+  const languageOptions = ["简中", "英文", "日语", "Emoji 混排"];
+  const lengthOptions = [
+    { value: 'paragraph', label: '段落 (100-200字)' },
+    { value: 'short', label: '短句' }
+  ];
 
   const generateRandomId = () => {
     const randomId = Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -32,7 +59,13 @@ export default function Home() {
     }
     setLoading(true);
     try {
-      const result = await generateSurrender(id);
+      const promptParams = {
+        tone: tone,
+        style: literaryStyle,
+        language: language,
+        length: length
+      };
+      const result = await generateSurrender(id, promptParams);
       setSurrender(result);
       toast.success("臣服声明生成成功！");
     } catch (error) {
@@ -131,7 +164,7 @@ export default function Home() {
               <div className="space-y-4 sm:space-y-6">
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                   <Input
-                    placeholder="输入你的ID"
+                    placeholder="输入你的ID (选填，可随机生成)"
                     value={id}
                     onChange={(e) => setId(e.target.value)}
                     className="flex-1 bg-white/50 dark:bg-gray-800/50 border-white/20 dark:border-gray-700/50 backdrop-blur-sm text-center sm:text-left"
@@ -141,11 +174,68 @@ export default function Home() {
                     onClick={generateRandomId}
                     className="backdrop-blur-sm border-white/20 dark:border-gray-700/50 hover:bg-white/20 dark:hover:bg-gray-800/50 w-full sm:w-auto"
                   >
-                    随机生成
+                    随机生成ID
                   </Button>
                 </div>
+
+                {/* Prompt Parameter Controls */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-5 pt-3">
+                  <div>
+                    <Label htmlFor="tone-select" className="text-sm font-medium text-gray-300 mb-1.5 block">语气风格</Label>
+                    <Select value={tone} onValueChange={setTone}>
+                      <SelectTrigger id="tone-select" className="bg-white/50 dark:bg-gray-800/50 border-white/20 dark:border-gray-700/50 backdrop-blur-sm">
+                        <SelectValue placeholder="选择语气风格" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {toneOptions.map(option => (
+                          <SelectItem key={option} value={option}>{option}</SelectItem> 
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="literary-style-select" className="text-sm font-medium text-gray-300 mb-1.5 block">文风</Label>
+                    <Select value={literaryStyle} onValueChange={setLiteraryStyle}>
+                      <SelectTrigger id="literary-style-select" className="bg-white/50 dark:bg-gray-800/50 border-white/20 dark:border-gray-700/50 backdrop-blur-sm">
+                        <SelectValue placeholder="选择文风" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {styleOptions.map(option => (
+                          <SelectItem key={option} value={option}>{option}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="language-select" className="text-sm font-medium text-gray-300 mb-1.5 block">语言</Label>
+                    <Select value={language} onValueChange={setLanguage}>
+                      <SelectTrigger id="language-select" className="bg-white/50 dark:bg-gray-800/50 border-white/20 dark:border-gray-700/50 backdrop-blur-sm">
+                        <SelectValue placeholder="选择语言" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {languageOptions.map(option => (
+                          <SelectItem key={option} value={option}>{option}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="length-select" className="text-sm font-medium text-gray-300 mb-1.5 block">长度</Label>
+                    <Select value={length} onValueChange={(v) => setLength(v as 'short' | 'paragraph')}>
+                      <SelectTrigger id="length-select" className="bg-white/50 dark:bg-gray-800/50 border-white/20 dark:border-gray-700/50 backdrop-blur-sm">
+                        <SelectValue placeholder="选择长度" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {lengthOptions.map(option => (
+                          <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 <Button
-                  className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700 text-white border-0 h-12 sm:h-auto"
+                  className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700 text-white border-0 h-12 sm:h-auto mt-4"
                   onClick={handleSubmit}
                   disabled={loading || !id}
                 >
@@ -194,6 +284,38 @@ export default function Home() {
           </motion.div>
         </div>
 
+        {/* Theme Selection UI */}
+        <motion.div 
+          className="my-8 md:my-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+        >
+          <h3 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-center text-gray-700 dark:text-gray-300">选择卡片主题</h3>
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
+            {cardThemes.map((theme) => (
+              <motion.button
+                key={theme.id}
+                onClick={() => setSelectedThemeId(theme.id)}
+                className={`p-3 sm:p-4 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900
+                            ${selectedThemeId === theme.id ? 'border-violet-500 ring-2 ring-violet-500' : 'border-gray-300 dark:border-gray-600 hover:border-violet-400 dark:hover:border-violet-500'}
+                            w-32 h-20 sm:w-36 sm:h-24 flex flex-col items-center justify-center text-center shadow-md hover:shadow-lg`}
+                style={{ 
+                  background: theme.styles.gradient || theme.styles.backgroundColor || '#f0f0f0',
+                  color: theme.styles.textColor || (theme.styles.gradient || theme.styles.backgroundColor ? (theme.styles.backgroundColor === '#0d0d0d' || theme.styles.backgroundColor === '#0A0A1E' || theme.styles.backgroundColor === '#10102E' ? '#FFFFFF' : '#333333') : undefined),
+                  fontFamily: theme.styles.fontFamily,
+                }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+              >
+                <span className="text-xs sm:text-sm font-medium">{theme.name}</span>
+                {/* <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 truncate">{theme.description}</p> */}
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+
         {/* 生成结果 */}
         <AnimatePresence mode="wait">
           {surrender && (
@@ -205,7 +327,7 @@ export default function Home() {
               transition={{ duration: 0.5 }}
               className="mt-8 sm:mt-12 md:mt-16 max-w-4xl mx-auto px-4"
             >
-              <SurrenderCard surrender={surrender} />
+              <SurrenderCard surrender={surrender} themeId={selectedThemeId} />
             </motion.div>
           )}
         </AnimatePresence>
