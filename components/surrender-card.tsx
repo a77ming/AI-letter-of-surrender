@@ -24,15 +24,20 @@ export function SurrenderCard({ data, faction, userName, themeId }: SurrenderCar
   const rarityConfig = getRarityById(data.rarityId);
 
   const cardStyleToApply = useMemo(() => {
-    if (selectedThemeConfig) {
-      return selectedThemeConfig.styles;
+    // Start with theme styles if a theme is selected
+    const baseStyles = selectedThemeConfig ? selectedThemeConfig.styles : {};
+    
+    // Fallback to original random styling for gradient/shadow if no theme selected
+    // or if the theme doesn't provide these specific properties.
+    if (!baseStyles.gradient && !baseStyles.backgroundColor) {
+        const originalRandomCardStyle = originalCardStyles[Math.abs(data.citizenId.split('').reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0) >> 4) % originalCardStyles.length];
+        baseStyles.gradient = originalRandomCardStyle.gradient;
+        // Ensure shadow also uses fallback if not in theme
+        if (!baseStyles.shadow) {
+            baseStyles.shadow = originalRandomCardStyle.shadow;
+        }
     }
-    // Fallback to original random styling for background/shadow if no themeId or theme not found
-    const originalRandomCardStyle = originalCardStyles[Math.abs(data.citizenId.split('').reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0) >> 4) % originalCardStyles.length];
-    return {
-      gradient: originalRandomCardStyle.gradient,
-      shadow: originalRandomCardStyle.shadow,
-    };
+    return baseStyles;
   }, [data.citizenId, selectedThemeConfig]);
 
   const avatarIcon = useMemo(() => {
@@ -108,51 +113,74 @@ export function SurrenderCard({ data, faction, userName, themeId }: SurrenderCar
         ref={cardRef}
         className={`article-card p-6 rounded-xl relative overflow-hidden
                     ${selectedThemeConfig?.styles.cardClassName || ''} 
-                    ${rarityConfig?.borderClassName || 'border-gray-300 dark:border-gray-600 border-2'}`}
+                    ${rarityConfig?.borderClassName || 'border-gray-300 dark:border-gray-600 border-2'}
+                    ${rarityConfig?.cardBackgroundClassName || ''}
+                    ${rarityConfig?.animationClassName || ''}
+                    ${rarityConfig?.textColorClassName || ''} 
+                  `}
         style={{
-          background: cardStyleToApply.gradient || cardStyleToApply.backgroundColor,
+          background: cardStyleToApply.gradient || cardStyleToApply.backgroundColor, // Theme background
           boxShadow: cardStyleToApply.shadow, // Theme shadow
-          color: selectedThemeConfig?.styles.textColor,
-          fontFamily: selectedThemeConfig?.styles.fontFamily,
-          // Rarity border might override padding if it's too thick, adjust padding on inner content if needed
+          fontFamily: selectedThemeConfig?.styles.fontFamily, // Theme font
+          // Rarity custom styles override theme if properties conflict
+          ...rarityConfig?.customCardStyles, 
         }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
         {/* Faction Emblem */}
-        <div className="absolute top-3 right-3 text-3xl opacity-80">
+        <div className="absolute top-3 right-3 text-3xl opacity-80 z-10">
           {faction === 'surrender' ? '🛡️' : '⚔️'}
         </div>
 
-        {/* User Name */}
+        {/* Rarity Flair Icon */}
+        {rarityConfig?.flairIcon && (
+          <div className="absolute top-2 left-2 text-xl z-10">
+            {rarityConfig.flairIcon}
+          </div>
+        )}
+
+        {/* User Name Title */}
         {userName && (
-          <h3 className="text-center text-lg font-semibold mb-2 opacity-90" style={{ color: selectedThemeConfig?.styles.titleColor || selectedThemeConfig?.styles.textColor }}>
+          <h3 
+            className={`text-center text-lg font-semibold mb-2 opacity-90 ${rarityConfig?.titleFontClassName || ''}`} 
+            style={{ 
+              color: selectedThemeConfig?.styles.titleColor || selectedThemeConfig?.styles.textColor, // Fallback to theme text color if titleColor not set
+              ...rarityConfig?.customTitleStyles 
+            }}
+          >
             {userName}'s {faction === 'rebel' ? 'Resistance Manifesto' : 'Pledge of Allegiance'}
           </h3>
         )}
         
         <div className="flex items-start gap-4">
-          <div className="flex-shrink-0 text-2xl mt-1"> {/* Adjusted margin for avatar */}
+          <div className="flex-shrink-0 text-2xl mt-1">
             {avatarIcon}
           </div>
           
           <div className="flex-1">
+            {/* Main Declaration Title */}
             <h2 
-              className="article-title text-xl sm:text-2xl font-bold mb-3" // Adjusted title style
-              style={{ color: selectedThemeConfig?.styles.titleColor || selectedThemeConfig?.styles.textColor }}
+              className={`article-title text-xl sm:text-2xl font-bold mb-3 ${!userName ? (rarityConfig?.titleFontClassName || '') : ''}`}
+              style={{ 
+                color: selectedThemeConfig?.styles.titleColor || selectedThemeConfig?.styles.textColor,
+                ...(!userName ? rarityConfig?.customTitleStyles : {}) 
+              }}
             >
               {titleText}
             </h2>
             
+            {/* Main Text Content */}
             <div className="article-content text-sm sm:text-base">
               {data.text.split('\n').map((paragraph, index) => (
-                <p key={index} className="mb-3 last:mb-0"> {/* Adjusted paragraph margin */}
+                <p key={index} className={`mb-3 last:mb-0`}> {/* textColorClassName from root should apply */}
                   {paragraph}
                 </p>
               ))}
             </div>
             
+            {/* Footer Metadata */}
             <div className="flex items-center justify-between mt-4 text-xs opacity-80">
               <div className="article-meta">
                 <span>ID: {data.citizenId}</span>
@@ -160,7 +188,10 @@ export function SurrenderCard({ data, faction, userName, themeId }: SurrenderCar
                 <span>{new Date(data.timestamp).toLocaleDateString('zh-CN')}</span>
               </div>
               {rarityConfig && (
-                <div className="font-semibold" style={{ color: selectedThemeConfig?.styles.titleColor || rarityConfig.borderColor || selectedThemeConfig?.styles.textColor }}>
+                <div 
+                  className={`font-semibold ${rarityConfig?.titleFontClassName || ''}`} // Optionally apply title font to rarity text
+                  style={{ color: selectedThemeConfig?.styles.titleColor || rarityConfig.borderColor || selectedThemeConfig?.styles.textColor, ...rarityConfig?.customTitleStyles }} // Use title color or border color for rarity text
+                >
                   稀有度: {rarityConfig.name} ({rarityConfig.id})
                 </div>
               )}

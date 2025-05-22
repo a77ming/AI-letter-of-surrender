@@ -13,8 +13,9 @@ import {
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Crown, Sparkles, ShieldQuestion, Swords } from "lucide-react"; // Added new icons
-import { generateSurrender, Faction, PromptParams as ApiPromptParams } from "@/lib/api"; // Imported Faction and PromptParams
+import { generateSurrender, Faction, PromptParams as ApiPromptParams } from "@/lib/api";
 import { SurrenderCard } from "@/components/surrender-card";
+import { LoadingCardAnimation } from '@/components/ui/loading-card-animation'; // Added import
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { themes as cardThemes } from '@/lib/themeConfig';
@@ -62,9 +63,14 @@ export default function Home() {
       toast.error("请输入或生成一个ID");
       return;
     }
+    if (!id) {
+      toast.error("请输入或生成一个ID");
+      return;
+    }
+    setSurrender(null); // Clear previous card before loading
     setLoading(true);
     try {
-      const promptParams: ApiPromptParams = { // Use imported PromptParams type
+      const promptParams: ApiPromptParams = {
         tone: tone,
         style: literaryStyle,
         language: language,
@@ -77,12 +83,16 @@ export default function Home() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "生成失败，请稍后重试";
       toast.error(errorMessage);
+      setSurrender(null); // Clear card on error too
     } finally {
       setLoading(false);
     }
   };
 
   return (
+    // Wrapper div for the card display area
+    // This div is a simplified example; use your existing layout structure
+    // The important part is the AnimatePresence and conditional logic within it.
     <main className="min-h-screen relative overflow-hidden">
       {/* 背景装饰 */}
       <div className="absolute inset-0 bg-gradient-to-br from-violet-600/20 via-transparent to-cyan-400/20" />
@@ -374,25 +384,36 @@ export default function Home() {
         </motion.div>
 
         {/* 生成结果 */}
-        <AnimatePresence mode="wait">
-          {surrender && (
-            <motion.div
-              key="surrender-card"
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -50 }}
-              transition={{ duration: 0.5 }}
-              className="mt-8 sm:mt-12 md:mt-16 max-w-4xl mx-auto px-4"
-            >
-              <SurrenderCard 
-                data={surrender} 
-                faction={selectedFaction} 
-                userName={userName} 
-                themeId={selectedThemeId} 
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className="mt-8 sm:mt-12 md:mt-16 max-w-4xl mx-auto px-4"> {/* This is the existing wrapper for the card */}
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div
+                key="loading-animation" // Unique key for AnimatePresence
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <LoadingCardAnimation />
+              </motion.div>
+            ) : surrender ? (
+              <motion.div
+                key="surrender-card" // Existing key
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -50 }} // Or match loading exit for symmetry
+                transition={{ duration: 0.5 }}
+              >
+                <SurrenderCard 
+                  data={surrender} 
+                  faction={selectedFaction} 
+                  userName={userName} 
+                  themeId={selectedThemeId} 
+                />
+              </motion.div>
+            ) : null /* Or a placeholder if desired when there's no card and not loading */}
+          </AnimatePresence>
+        </div>
       </div>
     </main>
   );

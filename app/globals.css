@@ -438,3 +438,55 @@
 .dark .share-button:hover {
   background: rgba(255, 255, 255, 0.1);
 }
+
+/* Custom Rarity Animations and Effects */
+
+.text-glow-gold {
+  text-shadow: 0 0 6px #FBBF24, 0 0 8px #FBBF24; /* Amber color from UR */
+}
+
+.text-glow-rose {
+  text-shadow: 0 0 7px #F43F5E, 0 0 9px #F43F5E; /* Rose color from MR */
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.animate-shimmer-bg {
+  animation: shimmer 4s infinite linear;
+  background-image: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 50%, /* Light shimmer color, adjust opacity as needed */
+    transparent 100%
+  );
+  background-size: 200% auto;
+  background-repeat: no-repeat;
+  /* Ensure this class is applied to an element that has a background to shimmer over,
+     or adjust to apply to a pseudo-element if the main element's background is complex. */
+}
+
+/* Scanline Animation for Loading Card */
+@keyframes scanline-across {
+  0% {
+    left: -100%; /* Start completely to the left */
+  }
+  50%, 100% { /* Stay at the right for a bit then reset */
+    left: 100%; /* Move completely to the right */
+  }
+}
+
+.animate-scanline { /* Apply this class to the element that is the scan line */
+  position: absolute; 
+  top: 0;
+  height: 100%;
+  /* Width and background are set in the component: w-1/2 bg-gradient-to-r ... */
+  animation: scanline-across 3s infinite ease-in-out;
+  opacity: 0.6; /* Make it a bit subtle */
+}
