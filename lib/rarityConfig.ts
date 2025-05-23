@@ -4,72 +4,76 @@ export interface RarityLevel {
   id: string;
   name: string;
   probability: number;
-  borderColor?: string; 
   borderClassName?: string;
-
-  // New properties for enhanced visuals:
   cardBackgroundClassName?: string;
-  titleFontClassName?: string;
   textColorClassName?: string;
-  animationClassName?: string; // e.g., 'animate-pulse', 'animate-bounce' (standard) or custom like 'animate-shimmer-bg'
-  flairIcon?: string; // Emoji or simple SVG string
-  customCardStyles?: CSSProperties; 
+  titleFontClassName?: string;
+  animationClassName?: string;
+  flairIcon?: string;
+  customCardStyles?: CSSProperties;
   customTitleStyles?: CSSProperties;
 }
 
 export const rarityLevels: RarityLevel[] = [
-  {
+  { // R (普通) - White/Light Theme
     id: 'R',
     name: '普通',
     probability: 70,
-    borderClassName: 'border-gray-400 dark:border-gray-500',
-    cardBackgroundClassName: 'bg-opacity-50 dark:bg-opacity-50',
+    borderClassName: 'border-gray-300 dark:border-gray-500', // No glow
+    cardBackgroundClassName: 'bg-white dark:bg-gray-200', // Slightly darker dark mode background
+    textColorClassName: 'text-gray-900 dark:text-gray-900', // Consistently dark text
+    customCardStyles: {}, // Ensure no boxShadow
+    // titleFontClassName: '', // Default text color will apply
   },
-  {
+  { // SR (稀有) - Green Theme
     id: 'SR',
     name: '稀有',
     probability: 20,
-    borderClassName: 'border-sky-500 dark:border-sky-400 border-2',
-    titleFontClassName: 'font-semibold',
-    cardBackgroundClassName: 'bg-opacity-70 dark:bg-opacity-70',
+    borderClassName: 'border-2 border-green-500 dark:border-green-400 shadow-[0_0_15px_#10B981] dark:shadow-[0_0_15px_#34D399]',
+    cardBackgroundClassName: 'bg-green-300 dark:bg-green-700',
+    textColorClassName: 'text-green-900 dark:text-green-50',
+    customCardStyles: {}, // Remove previous boxShadow
+    titleFontClassName: 'font-semibold text-green-700 dark:text-green-200',
+    // animationClassName: '',
+    // flairIcon: '',
   },
-  {
+  { // SSR (超稀有) - Blue Theme
     id: 'SSR',
     name: '超稀有',
     probability: 7,
-    borderClassName: 'border-purple-500 dark:border-purple-400 border-2 shadow-md shadow-purple-500/50',
-    cardBackgroundClassName: 'bg-gradient-to-tr from-purple-500/10 via-transparent to-purple-500/10',
-    titleFontClassName: 'font-bold text-purple-600 dark:text-purple-400',
-    animationClassName: 'animate-pulse', // Standard Tailwind pulse
+    borderClassName: 'border-2 border-blue-500 dark:border-blue-400 shadow-[0_0_18px_#3B82F6] dark:shadow-[0_0_18px_#60A5FA]',
+    cardBackgroundClassName: 'bg-blue-300 dark:bg-blue-700',
+    textColorClassName: 'text-blue-900 dark:text-blue-50',
+    customCardStyles: {}, // Remove previous boxShadow
+    titleFontClassName: 'font-bold text-blue-700 dark:text-blue-200',
+    animationClassName: 'animate-pulse', // Retain
+    // flairIcon: '',
   },
-  {
+  { // UR (终极) - Purple Theme
     id: 'UR',
     name: '终极',
     probability: 2,
-    borderClassName: 'border-amber-400 dark:border-amber-300 border-3 shadow-lg shadow-amber-400/60',
-    cardBackgroundClassName: 'bg-gradient-to-br from-amber-500/20 via-transparent to-amber-500/20', // Removed transform scale for now, can be in customCardStyles or component
-    titleFontClassName: 'font-extrabold text-amber-500 dark:text-amber-300', // Removed text-glow-gold (custom)
-    animationClassName: 'animate-bounce', // Standard Tailwind bounce
-    flairIcon: '⭐',
-    customTitleStyles: { textShadow: '0 0 5px #FBBF24' }, // Gold glow for title
+    borderClassName: 'border-2 border-purple-500 dark:border-purple-400 shadow-[0_0_22px_#8B5CF6] dark:shadow-[0_0_22px_#A78BFA]',
+    cardBackgroundClassName: 'bg-purple-300 dark:bg-purple-700',
+    textColorClassName: 'text-purple-900 dark:text-purple-50',
+    customCardStyles: {}, // Remove previous boxShadow
+    titleFontClassName: 'font-extrabold text-purple-700 dark:text-purple-200',
+    animationClassName: 'animate-bounce', // Retain
+    flairIcon: '⭐', // Retain
+    // customTitleStyles: {}, // Ensure no conflict if any existed
   },
-  {
+  { // MR (神话) - Gold/Amber Theme
     id: 'MR',
     name: '神话',
     probability: 1,
-    borderClassName: 'border-rose-600 dark:border-rose-500 border-4 ring-4 ring-rose-500 dark:ring-rose-400 ring-offset-2 ring-offset-gray-100 dark:ring-offset-gray-800 shadow-2xl shadow-rose-600/80 dark:shadow-rose-500/80',
-    cardBackgroundClassName: 'bg-gradient-radial from-rose-500/30 via-transparent to-transparent filter saturate-150',
-    titleFontClassName: 'font-black tracking-wider', // Removed text-glow-rose (custom)
-    animationClassName: 'animate-shimmer-bg', // Placeholder for custom shimmer animation
-    flairIcon: '✨👑✨',
-    textColorClassName: 'text-white', // Force white text for contrast
-    customCardStyles: { transform: 'rotate(1deg) scale(1.02)', boxShadow: '0 0 30px #E11D48, 0 0 15px #E11D48 inset' },
-    customTitleStyles: { 
-      background: 'linear-gradient(to right, #F43F5E, #FECDD3, #F43F5E)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      textShadow: '0 0 8px #F43F5E',
-    },
+    borderClassName: 'border-3 border-amber-500 dark:border-amber-400 shadow-[0_0_25px_#F59E0B] dark:shadow-[0_0_25px_#FBBF24]',
+    cardBackgroundClassName: 'bg-amber-300 dark:bg-amber-700',
+    textColorClassName: 'text-amber-900 dark:text-amber-50',
+    customCardStyles: { transform: 'rotate(1deg) scale(1.02)' }, // Retain transform, remove boxShadow
+    titleFontClassName: 'font-black text-amber-700 dark:text-amber-200', // Prominent solid color
+    customTitleStyles: {}, // Remove gradient text style
+    animationClassName: 'animate-shimmer-bg', // Retain
+    flairIcon: '✨👑✨', // Retain
   }
 ];
 
@@ -88,19 +92,7 @@ export const getRandomRarity = (): RarityLevel => {
     }
     randomPoint -= level.probability;
   }
-  // Fallback: should ideally not be reached if probabilities sum to 100 correctly.
-  // This can happen if Math.random() is exactly 1.0 and totalProbability is 100,
-  // making randomPoint start at 100. After subtracting all probabilities, randomPoint would be 0.
-  // Or if there's a slight floating point imprecision.
-  // Returning the last level or the first one are common fallbacks.
-  // Given the loop structure, if randomPoint becomes 0 or negative after some subtractions,
-  // the next level.probability (which is > 0) will satisfy `randomPoint < level.probability`.
-  // The only way to fall through is if randomPoint is still positive after all subtractions,
-  // which implies sum of probabilities was less than totalProbability, or randomPoint was initially >= totalProbability.
-  // Since Math.random() is [0, 1), randomPoint will be [0, 100).
-  // If it's exactly 0, the first level (R) is chosen.
-  // The loop should correctly distribute.
-  return rarityLevels[rarityLevels.length - 1]; // Fallback to the last rarity if loop finishes
+  return rarityLevels[rarityLevels.length - 1]; // Fallback
 };
 
 // Verify sum of probabilities

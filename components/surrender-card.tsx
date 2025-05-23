@@ -23,22 +23,34 @@ export function SurrenderCard({ data, faction, userName, themeId }: SurrenderCar
   const selectedThemeConfig = themeId ? getThemeById(themeId) : undefined;
   const rarityConfig = getRarityById(data.rarityId);
 
-  const cardStyleToApply = useMemo(() => {
-    // Start with theme styles if a theme is selected
-    const baseStyles = selectedThemeConfig ? selectedThemeConfig.styles : {};
-    
-    // Fallback to original random styling for gradient/shadow if no theme selected
-    // or if the theme doesn't provide these specific properties.
-    if (!baseStyles.gradient && !baseStyles.backgroundColor) {
-        const originalRandomCardStyle = originalCardStyles[Math.abs(data.citizenId.split('').reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0) >> 4) % originalCardStyles.length];
-        baseStyles.gradient = originalRandomCardStyle.gradient;
-        // Ensure shadow also uses fallback if not in theme
-        if (!baseStyles.shadow) {
-            baseStyles.shadow = originalRandomCardStyle.shadow;
-        }
+  const finalCardStyles = useMemo(() => {
+    const themeStyles = selectedThemeConfig ? selectedThemeConfig.styles : {};
+    let computedBackground = themeStyles.gradient || themeStyles.backgroundColor;
+    let computedShadow = themeStyles.shadow;
+  
+    // Fallback to original random styling if theme doesn't provide background/shadow
+    if (!computedBackground) {
+      const originalRandomStyle = originalCardStyles[Math.abs(data.citizenId.split('').reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0) >> 4) % originalCardStyles.length];
+      computedBackground = originalRandomStyle.gradient; // originalCardStyles always provides gradient
+      if (!computedShadow) { // Apply fallback shadow only if theme didn't have one
+        computedShadow = originalRandomStyle.shadow;
+      }
     }
-    return baseStyles;
-  }, [data.citizenId, selectedThemeConfig]);
+  
+    // If rarity config specifies its own background *class*, then inline background style should be removed
+    // to let the Tailwind class take effect.
+    if (rarityConfig?.cardBackgroundClassName) {
+      computedBackground = undefined; 
+    }
+  
+    return {
+      ...(computedBackground && { background: computedBackground }), // Conditionally add background property
+      boxShadow: computedShadow,
+      fontFamily: themeStyles.fontFamily,
+      // Spread rarity custom styles last so they can override theme/fallback shadows or other CSS properties
+      ...rarityConfig?.customCardStyles, 
+    };
+  }, [data.citizenId, selectedThemeConfig, rarityConfig]);
 
   const avatarIcon = useMemo(() => {
     const hash = data.citizenId.split('').reduce((acc, char) => {
@@ -118,13 +130,7 @@ export function SurrenderCard({ data, faction, userName, themeId }: SurrenderCar
                     ${rarityConfig?.animationClassName || ''}
                     ${rarityConfig?.textColorClassName || ''} 
                   `}
-        style={{
-          background: cardStyleToApply.gradient || cardStyleToApply.backgroundColor, // Theme background
-          boxShadow: cardStyleToApply.shadow, // Theme shadow
-          fontFamily: selectedThemeConfig?.styles.fontFamily, // Theme font
-          // Rarity custom styles override theme if properties conflict
-          ...rarityConfig?.customCardStyles, 
-        }}
+        style={finalCardStyles}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
