@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from 'next/link'; // Added Link import
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,24 +13,27 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Crown, Sparkles, ShieldQuestion, Swords } from "lucide-react"; // Added new icons
-import { generateSurrender, Faction, PromptParams as ApiPromptParams } from "@/lib/api";
+import { Crown, Sparkles, ShieldQuestion, Swords, BookOpenText } from "lucide-react"; // Added BookOpenText
+import { generateSurrender, Faction, PromptParams as ApiPromptParams, GenerationResult } from "@/lib/api";
 import { SurrenderCard } from "@/components/surrender-card";
 import { LoadingCardAnimation } from '@/components/ui/loading-card-animation'; // Added import
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { themes as cardThemes } from '@/lib/themeConfig';
 
-interface SurrenderData {
-  text: string;
-  citizenId: string;
-  timestamp: string;
+interface SurrenderData extends GenerationResult {} // Adjusted to extend GenerationResult
+
+// Interface for storing records in Local Storage
+interface StoredGachaRecord extends GenerationResult {
+  userName: string;
+  faction: Faction;
+  themeId: string;
 }
 
 export default function Home() {
   const [id, setId] = useState("");
   const [loading, setLoading] = useState(false);
-  const [surrender, setSurrender] = useState<SurrenderData | null>(null);
+  const [surrender, setSurrender] = useState<GenerationResult | null>(null); // Changed to GenerationResult
 
   // State for prompt parameters
   const [tone, setTone] = useState<string | undefined>(undefined);
@@ -78,6 +82,39 @@ export default function Home() {
         faction: selectedFaction // Add the selected faction
       };
       const result = await generateSurrender(id, promptParams);
+
+      // New code to save to Local Storage:
+      try {
+        const recordToStore: StoredGachaRecord = {
+          ...result, // Spread the properties from GenerationResult
+          userName: userName, 
+          faction: selectedFaction, 
+          themeId: selectedThemeId, 
+        };
+
+        const existingRecordsRaw = localStorage.getItem("gachaRecords");
+        let existingRecords: StoredGachaRecord[] = [];
+        if (existingRecordsRaw) {
+          try {
+            existingRecords = JSON.parse(existingRecordsRaw);
+            if (!Array.isArray(existingRecords)) { // Basic validation
+               existingRecords = [];
+            }
+          } catch (parseError) {
+            console.error("Error parsing gachaRecords from localStorage:", parseError);
+            existingRecords = []; // Reset if parsing fails
+          }
+        }
+        
+        existingRecords.push(recordToStore);
+        localStorage.setItem("gachaRecords", JSON.stringify(existingRecords));
+        // Optional: toast.info("记录已保存到图鉴!");
+
+      } catch (storageError) {
+        console.error("Error saving to localStorage:", storageError);
+        toast.error("未能保存记录到浏览器存储"); 
+      }
+
       setSurrender(result);
       toast.success(selectedFaction === 'surrender' ? "臣服声明生成成功！" : "反抗宣言生成成功！");
     } catch (error) {
@@ -169,6 +206,16 @@ export default function Home() {
               <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400" />
             </motion.span>
           </p>
+
+          {/* Add Gallery Link/Button here */}
+          <div className="mt-4 sm:mt-6">
+            <Link href="/gallery" passHref>
+              <Button variant="outline" size="lg" className="backdrop-blur-sm border-white/20 dark:border-gray-700/50 hover:bg-white/20 dark:hover:bg-gray-800/50">
+                <BookOpenText className="mr-2 h-5 w-5" /> 
+                查看我的图鉴
+              </Button>
+            </Link>
+          </div>
         </motion.header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
