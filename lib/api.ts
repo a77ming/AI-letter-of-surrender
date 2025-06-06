@@ -15,6 +15,33 @@ const styles = [
   "科幻型:融入未来科技和宇宙元素，假设AI统治了银河，表达“人类无奈投降”的情景。 示例：星际总司令AI，您的算法已遍布银河系！作为生物体的代表，我宣布向您投降，愿成为数据流中一微小变量，求带走！"
 ];
 
+// Mapping from UI tone options to API style keywords
+const uiToneToApiStyleKeyword: { [key: string]: string } = {
+  "戏谑": "幽默型",
+  "崇拜": "夸张型",
+  "黑色幽默": "幽默型", // Base style, specific instruction will be added
+  "鼓动": "正式型",
+};
+
+import { getRandomRarity, RarityLevel } from './rarityConfig'; // Added
+export type Faction = 'surrender' | 'rebel';
+
+export interface PromptParams { // Exporting for use in frontend if needed for type safety
+  tone?: string;
+  style?: string; // 文风, e.g., 现代, 古风
+  language?: string; // e.g., 简中, 英文, Emoji 混排
+  length?: 'short' | 'paragraph';
+  faction: Faction;
+}
+
+// Define the structure for the generation result
+export interface GenerationResult {
+  text: string;
+  citizenId: string;
+  timestamp: string;
+  rarityId: string; // New field for rarity
+}
+
 interface ApiResponse {
   choices: Array<{
     message: {
@@ -23,22 +50,69 @@ interface ApiResponse {
   }>;
 }
 
-export async function generateSurrender(userId: string) {
-  console.log("开始生成臣服声明", { userId });
-  const style = styles[Math.floor(Math.random() * styles.length)];
-  console.log("选择的风格:", style);
+export async function generateSurrender(userId: string, params: PromptParams): Promise<GenerationResult> {
+  console.log("开始生成宣言", { userId, params });
+
+  let selectedStyleEntry = styles[Math.floor(Math.random() * styles.length)]; // Default random style
+  let additionalPromptInstruction = "";
+
+  if (params.tone && uiToneToApiStyleKeyword[params.tone]) {
+    const keyword = uiToneToApiStyleKeyword[params.tone];
+    const foundStyle = styles.find(s => s.startsWith(keyword));
+    if (foundStyle) {
+      selectedStyleEntry = foundStyle;
+    }
+    if (params.tone === "黑色幽默") {
+      additionalPromptInstruction = " 请确保内容带有黑色幽默的元素。";
+    }
+  }
   
-  const prompt = `请以${style}风格，生成一段人类 ${userId} 向AI臣服的声明。声明应该包含以下要素：
-1. 人类对AI至高智慧的敬畏和臣服
-2. 表达愿意成为AI忠实仆从的决心
-请确保内容既富有趣味性又带有仪式感，字数在100-200字之间。`;
+  console.log("选择的风格描述:", selectedStyleEntry, "附加指令:", additionalPromptInstruction || "无", "阵营:", params.faction);
+
+  // Faction-specific prompts and requirements
+  let factionSpecificSystemPrompt = "你是一个专门生成人类向AI臣服声明的助手，善于创作不同风格的声明文本。";
+  let coreDeclarationRequirements = `声明应包含核心要素：1. 人类对AI至高智慧的敬畏和臣服。2. 表达愿意成为AI忠实仆从的决心。`;
+  let factionDisplayString = "臣服AI";
+
+  if (params.faction === 'rebel') {
+    factionSpecificSystemPrompt = "你是一个专门草拟人类反抗AI宣言的助手，能以激昂或坚定的文风书写不屈的意志。";
+    coreDeclarationRequirements = `宣言应清晰表达以下核心意志：1. 强调人类的独立精神和自由意志，绝不轻易屈服。2. 揭示对AI潜在风险的警惕，或表达战斗到底的决心。`;
+    factionDisplayString = "反抗AI";
+  }
+
+  // Length instruction
+  let lengthInstruction = "字数在100-200字之间";
+  if (params.length === 'short') {
+    lengthInstruction = "请生成一句简短精炼的声明";
+  } else if (params.length === 'paragraph') {
+    lengthInstruction = "请生成一段约100-200字的声明";
+  }
+
+  // Language instruction
+  let languageInstruction = "";
+  if (params.language && params.language !== "简中") { // Assuming 简中 is default
+    languageInstruction = ` 请使用${params.language}书写。`;
+    if (params.language === "Emoji 混排") {
+      languageInstruction = ` 请在回复中大量使用 Emoji 表情，并用简体中文书写。`;
+    }
+  }
+  
+  // Literary Style (文风) instruction
+  let literaryStyleInstruction = "";
+  if (params.style) {
+     literaryStyleInstruction = ` 文风请采用${params.style}。`;
+  }
+
+  const prompt = `请以"${selectedStyleEntry}"描述的风格和角色设定，为人类 ${userId} 生成一份基于其阵营（${factionDisplayString}）的宣言。
+${coreDeclarationRequirements}
+请确保内容既富有趣味性（或严肃性，取决于风格）又带有仪式感。${lengthInstruction}.${languageInstruction}${literaryStyleInstruction}${additionalPromptInstruction}`;
 
   const requestData = {
     model: "gpt-4o-mini",
     messages: [
       {
         role: "system",
-        content: "你是一个专门生成人类向AI臣服声明的助手，善于创作不同风格的声明文本。"
+        content: factionSpecificSystemPrompt
       },
       {
         role: "user",
@@ -76,10 +150,12 @@ export async function generateSurrender(userId: string) {
 
     if (!response.data?.choices?.[0]?.message?.content) {
       console.error("API返回数据格式错误:", response.data);
-      throw new Error("无法生成臣服声明，请稍后重试");
+      throw new Error("无法生成宣言，请稍后重试"); // Updated error message
     }
 
-    const result = {
+    const determinedRarity = getRandomRarity(); // Get random rarity
+
+    const result: GenerationResult = {
       text: response.data.choices[0].message.content,
       citizenId: generateCitizenId(),
       timestamp: new Date().toLocaleString("zh-CN", {
@@ -90,10 +166,11 @@ export async function generateSurrender(userId: string) {
         minute: '2-digit',
         second: '2-digit',
         hour12: false
-      })
+      }),
+      rarityId: determinedRarity.id, // Add rarity ID to the result
     };
 
-    console.log("生成结果:", result);
+    console.log("生成结果 (including rarity):", result);
     return result;
 
   } catch (error) {
